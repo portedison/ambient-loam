@@ -28,10 +28,12 @@ A museum visitor, in-gallery or online. A catalogue record is terse — the glas
 
 ## What I would build next
 
-- **Semantic search**, so *any* collection record can auto-surface the passage that explains it (the original idea, generalised).
-- **More of the story**: the 1950 rebuild in Timaru, its makers (McCully and Pita Paipeta), and the loss of the mahinga kai where the raupō grew.
+- **Publications via API**: fetch the source publications through an API too, the way collection objects already are.
+- **More of the story**: bring in more of the collection, and pull further passages from the paper into the experience.
+- **Loading transitions**: ease and rotate, the terrain, imagery and cards in as they load, instead of popping in.
+- **Expandable markers**: collapse the label cards to their dots and expand them on hover or tap, so the map stays clean until you engage.
 - **Authoritative, offline data**: vendor the map tiles and swap in LINZ aerial + LiDAR; deploy; add keyboard controls, reduced-motion and a text fallback for accessibility.
 
 ## AI-assisted tools
 
-Built with **Claude Code** (Claude Opus) as a pair-programmer: reconnaissance of the collection API and candidate data sources, summarising the source PDF, scaffolding the Next.js + TypeScript app, writing the three.js terrain viewer and the server-side collection fetch, and iterating on the look against a live browser preview. The editorial and scoping decisions are mine, and quotations were checked against the source paper.
+Built with **Claude Code** (Claude Opus) as a pair-programmer: reconnaissance of the collection API and candidate data sources, summarising the source PDF, scaffolding the Next.js + TypeScript app, writing the three.js terrain viewer and the server-side collection fetch, and iterating on the look against a live browser preview. The editorial and scoping decisions are mine, quotations were checked against the source paper, and all code edits were reviewed and directed by me.
