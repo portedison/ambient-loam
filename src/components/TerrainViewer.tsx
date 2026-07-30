@@ -4,6 +4,17 @@ import { Fragment, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+export type MarkerImage = {
+  /** Collection image URL. */
+  src: string;
+  /** Intrinsic pixel dimensions — reserves layout space so nothing shifts on load. */
+  width: number;
+  height: number;
+  alt: string;
+  /** Attribution for the image (its collection object). */
+  credit: string;
+};
+
 export type MarkerAnchor = {
   id: string;
   /** WGS84 longitude / latitude of the point on the terrain. */
@@ -13,6 +24,8 @@ export type MarkerAnchor = {
   label: string;
   /** Source attribution. */
   cite: string;
+  /** Optional collection image shown in the card. */
+  image?: MarkerImage;
 };
 
 export type TerrainViewerProps = {
@@ -150,14 +163,15 @@ export default function TerrainViewer({
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
+      alpha: true,
       powerPreference: "high-performance",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0); // transparent — the page background shows through
     renderer.setSize(container.clientWidth, container.clientHeight);
     host.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x090b0f);
 
     const camera = new THREE.PerspectiveCamera(
       48,
@@ -177,6 +191,7 @@ export default function TerrainViewer({
     controls.zoomSpeed = 2.4;
     controls.minDistance = 8;
     controls.maxDistance = 420;
+    controls.maxPolarAngle = Math.PI / 2 - 0.08; // stay above the plane — never orbit under the terrain
     controls.target.set(-3, 2, 22);
     controls.update();
 
@@ -430,14 +445,31 @@ export default function TerrainViewer({
                 elementsFor(marker.id).label = el;
               }}
               style={{ display: "none" }}
-              className="absolute left-0 top-0 max-w-[236px] rounded-lg border border-white/10 bg-[#0a0c10]/80 px-2.5 py-[7px] backdrop-blur-[6px] will-change-transform"
+              className="pointer-events-auto absolute left-0 top-0 max-w-[236px] select-text rounded-lg border border-white/10 bg-[#0a0c10]/80 px-2.5 py-[7px] backdrop-blur-[6px] will-change-transform"
             >
+              {marker.image ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={marker.image.src}
+                    alt={marker.image.alt}
+                    width={marker.image.width}
+                    height={marker.image.height}
+                    className="mb-2 h-auto w-full rounded-md"
+                  />
+                </>
+              ) : null}
               <p className="text-[12px] font-medium leading-[1.4] text-[#f3efe6]">
                 {marker.label}
               </p>
               <p className="mt-1 text-[10px] italic leading-[1.3] text-[#f3efe6]/60">
                 {marker.cite}
               </p>
+              {marker.image ? (
+                <p className="mt-0.5 text-[10px] leading-[1.3] text-[#f3efe6]/45">
+                  {marker.image.credit}
+                </p>
+              ) : null}
             </div>
           </Fragment>
         ))}
