@@ -51,10 +51,10 @@ const texTileUrl = (x: number, y: number): string =>
 
 /** World-space footprint of the square terrain tile. */
 const WORLD_SIZE = 100;
-/** Fraction trimmed off the eastern (right) edge, to centre the composition. */
-const EAST_CROP = 0.14;
-/** East–west footprint after trimming (north–south stays WORLD_SIZE). */
-const WORLD_SIZE_X = WORLD_SIZE * (1 - EAST_CROP);
+/** Fraction trimmed off the northern edge — the inland land that sprawls out to the right. */
+const NORTH_CROP = 0.15;
+/** North–south footprint after trimming (east–west, the seaward axis, stays WORLD_SIZE). */
+const WORLD_SIZE_Z = WORLD_SIZE * (1 - NORTH_CROP);
 
 /** Web-Mercator tile row → latitude (degrees). */
 function tileYToLat(y: number, z: number): number {
@@ -326,22 +326,23 @@ export default function TerrainViewer({
         anchors.set(
           marker.id,
           new THREE.Vector3(
-            u * WORLD_SIZE - 0.5 * WORLD_SIZE_X,
+            (u - 0.5) * WORLD_SIZE,
             (metres / METRES_PER_UNIT) * exaggeration + 0.4,
-            (v - 0.5) * WORLD_SIZE,
+            (v - NORTH_CROP) * WORLD_SIZE - 0.5 * WORLD_SIZE_Z,
           ),
         );
       }
 
       const step = Math.max(1, Math.floor(n / resolution));
-      const usedW = Math.round(n * (1 - EAST_CROP)); // keep only the western part
-      const segX = Math.floor(usedW / step) - 1;
-      const segZ = Math.floor(n / step) - 1;
-      const geo = new THREE.PlaneGeometry(WORLD_SIZE_X, WORLD_SIZE, segX, segZ);
+      const startRow = Math.round(n * NORTH_CROP); // drop the northern strip
+      const usedH = n - startRow;
+      const segX = Math.floor(n / step) - 1;
+      const segZ = Math.floor(usedH / step) - 1;
+      const geo = new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE_Z, segX, segZ);
       const position = geo.attributes.position as THREE.BufferAttribute;
       for (let row = 0; row <= segZ; row++) {
         for (let col = 0; col <= segX; col++) {
-          const sr = row * step;
+          const sr = startRow + row * step;
           const sc = col * step;
           let sum = 0;
           let count = 0;
@@ -362,7 +363,7 @@ export default function TerrainViewer({
       const tex = new THREE.CanvasTexture(texCanvas);
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
-      tex.repeat.set(1 - EAST_CROP, 1); // show only the kept (western) strip
+      tex.repeat.set(1, 1 - NORTH_CROP); // show only the kept (southern) strip
       const mat = new THREE.MeshStandardMaterial({
         map: tex,
         roughness: 1,
